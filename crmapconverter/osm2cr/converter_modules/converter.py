@@ -51,12 +51,12 @@ class Scenario:
     @staticmethod
     def step_collection_1(file) -> road_graph.Graph:
         print("reading File")
-        roads, points, restrictions, center_point, bounds = osm_parser.parse_file(
-            file, config.ACCEPTED_HIGHWAYS
+        roads, points, restrictions, center_point, bounds, traffic_signs = osm_parser.parse_file(
+            file, config.ACCEPTED_HIGHWAYS, config.TRAFFIC_SIGNS_KEYS, config.TRAFFIC_SIGNS_VALUES
         )
         print("creating graph")
         g = osm_parser.roads_to_graph(
-            roads, points, restrictions, center_point, bounds, center_point
+            roads, points, restrictions, center_point, bounds, center_point, traffic_signs
         )
         if config.MAKE_CONTIGUOUS:
             print("making graph contiguously")
@@ -97,6 +97,9 @@ class Scenario:
         )
         print("adjust common bound points")
         g.correct_start_end_points()
+        print("Trafic Signals:")
+        for node in g.traffic_signals:
+            print(f"{node}")
         print("done")
         return g
 

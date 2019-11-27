@@ -63,6 +63,19 @@ ACCEPTED_HIGHWAYS = [
     "living_street",
     "service",
 ]
+TRAFFIC_SIGNS_VALUES = [
+    "traffic_signals",
+    "maxspeed",
+    "stop",
+    "give_way",
+    "city_limit",
+]
+TRAFFIC_SIGNS_KEYS = [
+    "traffic_sign",
+    "overtaking",
+    "traffic_signals:direction"
+]
+
 # number of lanes for each type of road should be >=1
 LANECOUNTS = {
     "motorway": 6,

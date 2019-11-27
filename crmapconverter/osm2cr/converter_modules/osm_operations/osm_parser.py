@@ -100,6 +100,20 @@ def get_nodes(roads: Set[ElTree.Element], root) -> Dict[int, ElTree.Element]:
     return road_nodes
 
 
+def get_traffic_signs(nodes: Dict[int, ElTree.Element],
+                      accepted_traffic_sign_by_keys: List[str],
+                      accepted_traffic_sign_by_values: List[str]) ->List[Dict]:
+    traffic_signals = []
+    for node_id in nodes:
+        node = nodes[node_id]
+        tags = node.findall('tag')
+        for tag in tags:
+            if tag.attrib['k'] in accepted_traffic_sign_by_keys or tag.attrib['v'] in accepted_traffic_sign_by_values:
+                sign = {'k': tag.attrib['k'], 'v': tag.attrib['v']}
+                traffic_signals.append({node_id: sign})
+    return traffic_signals
+
+
 def parse_restrictions(
     restrictions: Set[ElTree.Element]
 ) -> Dict[int, Set[Restriction]]:
@@ -196,6 +210,7 @@ def parse_file(
     type(None),
     Tuple[float, float],
     Tuple[float, float, float, float],
+    List[ElTree.Element]
 ]:
     """
     extracts all ways with streets and all the nodes in these streets of a given osm file
@@ -204,7 +219,9 @@ def parse_file(
     :type filename: str
     :param accepted_highways: a list of all highways that shall be extracted
     :type accepted_highways: List[str]
-    :return: roads, road_points: set of all way objects and dict of required nodes
+    :param accepted_traffic_sign_by_keys:  list of string to identify nodes with accepted traffic sign by key
+    :param accepted_traffic_sign_by_values: list of string to identify nodes with accepted traffic sign by value
+    :return: roads, road_points: set of all way objects and dict of required nodes and set of nodes with traffic signs
     :rtype: Tuple[Set[ElTree.Element], Dict[int, Point]]
     """
     tree = ElTree.parse(filename)
@@ -213,6 +230,10 @@ def parse_file(
     roads = get_roads(accepted_highways, root)
     # get all required nodes
     road_nodes = get_nodes(roads, root)
+    # get traffic signals
+    traffic_signs = get_traffic_signs(road_nodes, accepted_traffic_sign_by_keys, accepted_traffic_sign_by_values)
+    for sign in traffic_signs:
+        print(sign)
     custom_bounds = read_custom_bounds(root)
     road_points, center_point, bounds = get_points(road_nodes, custom_bounds)
     restrictions = get_restrictions(root)
@@ -220,7 +241,7 @@ def parse_file(
     if custom_bounds is not None:
         bounds = custom_bounds
 
-    return roads, road_points, restrictions, center_point, bounds
+    return roads, road_points, restrictions, center_point, bounds, traffic_signs
 
 
 def parse_turnlane(turnlane: str) -> str:
@@ -574,12 +595,13 @@ def get_node_set(edges: Set[rg.GraphEdge]) -> Set[rg.GraphNode]:
 
 
 def roads_to_graph(
-    roads: Set[ElTree.Element],
-    road_points: Dict[int, Point],
-    restrictions: Dict[int, Set[Restriction]],
-    center_point: Tuple[float, float],
-    bounds: Tuple[float, float, float, float],
-    origin: tuple,
+        roads: Set[ElTree.Element],
+        road_points: Dict[int, Point],
+        restrictions: Dict[int, Set[Restriction]],
+        center_point: Tuple[float, float],
+        bounds: Tuple[float, float, float, float],
+        origin: tuple,
+        traffic_signals: Set[ElTree.Element],
 ) -> rg.Graph:
     """
     converts a set of roads and points to a road graph
@@ -592,6 +614,7 @@ def roads_to_graph(
     :type road_points: Dict[int, Point]
     :param restrictions: restrictions which will be applied to edges
     :param center_point: gps coordinates of the origin
+    :param traffic_signals: set of nodes with traffic signals
     :return:
     """
     origin = np.array(origin)[::-1]

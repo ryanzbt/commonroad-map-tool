@@ -38,16 +38,16 @@ class Edge:
                  id: int,
                  node1: geometry.Point,
                  node2: geometry.Point,
-                 leftBound: Set[geometry.Point],
-                 rightBound: Set[geometry.Point],
-                 additionalValue: Dict):
+                 left_bound: Set[geometry.Point],
+                 right_bound: Set[geometry.Point],
+                 additional_values: Dict):
         self.id = id
         self.node1 = node1
         self.node2 = node2
-        self.leftBound = leftBound
-        self.rightBound = rightBound
-        self.maxspeed = additionalValue['maxspeed']
-        self.width = additionalValue['width']
+        self.leftBound = left_bound
+        self.rightBound = right_bound
+        self.maxspeed = additional_values['maxspeed']
+        self.width = additional_values['width']
 
 
 class TrafficSign:
